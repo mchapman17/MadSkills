@@ -1,15 +1,17 @@
 class Beast < SKSpriteNode
 
-  BEAST = 0x1 << 0
+  BEAST_CATEGORY = 0x1 << 1
 
   STATE_ALIVE = 1
   STATE_DEAD = 2
 
+  KILL_POINTS = 1
+
   def init
-    self.initWithImageNamed('images/beast_1.png')
-    self.physicsBody = physics_body
+    self.initWithImageNamed('images/beast_01.png')
     self.position = CGPointMake(random_x, UIScreen.mainScreen.bounds.size.height + self.size.height)
-    # self.scale = 1.1
+    self.physicsBody = physics_body
+    self.scale = 0.7
     self.name = "beast"
     self.runAction(hover)
     @current_state = STATE_ALIVE
@@ -18,30 +20,49 @@ class Beast < SKSpriteNode
   end
 
   def hover
-    beast1 = SKTexture.textureWithImageNamed('images/beast_1.png')
-    beast2 = SKTexture.textureWithImageNamed('images/beast_2.png')
+    beast1 = SKTexture.textureWithImageNamed('images/beast_01.png')
+    beast2 = SKTexture.textureWithImageNamed('images/beast_02.png')
     animation = SKAction.animateWithTextures([beast1, beast2], timePerFrame: 0.25)
 
     SKAction.repeatActionForever(animation)
   end
 
+  def explode
+    self.physicsBody = nil
+
+    atlas = SKTextureAtlas.atlasNamed("explosion")
+    textures = atlas.textureNames.sort.map { |texture| SKTexture.textureWithImageNamed(texture) }
+    animation = SKAction.animateWithTextures(textures, timePerFrame: 0.05, resize: false, restore: false)
+
+    self.runAction(SKAction.repeatAction(animation, count: 1), completion: lambda { self.removeFromParent })
+  end
+
   def die
     unless dead?
-      self.removeAllActions # self.removeActionForKey('hover') - not sure why this doesn't work
+      # self.removeAllActions # self.removeActionForKey('hover') - not sure why this doesn't work
       @current_state = STATE_DEAD
-      puts "beast is dead!!"
-      SKAction.rotateToAngle(1.2, duration: 0.2, shortestUnitArc: true)
+      GameData.instance.update_current_score(KILL_POINTS)
     end
+  end
+
+  def contacted_beast(beast)
+    # do nothing
+  end
+
+  def contacted_ground(ground)
+    die
+  end
+
+  def contacted_turret(turret)
+    die
   end
 
   def physics_body
     body = SKPhysicsBody.bodyWithRectangleOfSize(size)
     body.dynamic = true
-    body.mass = 1
-    # body.affectedByGravity = false
-    # body.friction = 0.0
-    body.categoryBitMask = BEAST
-    body.contactTestBitMask = Level01Scene::WORLD
+    body.mass = 10
+    body.categoryBitMask = BEAST_CATEGORY
+    body.contactTestBitMask = Ground::GROUND_CATEGORY
     body
   end
 
@@ -54,15 +75,11 @@ class Beast < SKSpriteNode
   end
 
   def should_be_removed?
-    position.x < -40 || position.x > UIScreen.mainScreen.bounds.size.width + 40 || position.y < 0
+    position.x < -40 || position.x > UIScreen.mainScreen.bounds.size.width + 40
   end
 
   def random_x
-    x = Random.new.rand((size.width)..(UIScreen.mainScreen.bounds.size.width - size.width))
-    puts "beast width: #{size.width}"
-    puts "screen width: #{UIScreen.mainScreen.bounds.size.width - size.width}"
-    puts "x: #{x}"
-    x
+    Random.new.rand((size.width)..(UIScreen.mainScreen.bounds.size.width - size.width))
   end
 
 end

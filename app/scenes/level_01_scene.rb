@@ -11,46 +11,40 @@ class Level01Scene < SKScene
     add_background
     add_ground
     add_turret
+    add_score_label
     add_beasts
-    # add_ground
-    # add_bird
-
-    # add_pause_label
   end
 
   def add_background
     texture = SKTexture.textureWithImageNamed("images/background_gradient.png")
 
-    # 4.times do |i|
-    #   x_position = mid_x + (i * mid_x * 2)
-      background = SKSpriteNode.spriteNodeWithTexture(texture)
-      background.position = CGPointMake(mid_x, mid_y)
-      background.name = "background"
-      background.zPosition = -20
-    #   # skyline.scale = 1.12
-    #   # skyline.runAction scroll_action(mid_x, 0.1)
+    background = SKSpriteNode.spriteNodeWithTexture(texture)
+    background.position = CGPointMake(mid_x, mid_y)
+    background.name = "background"
+    background.zPosition = -20
 
-      addChild(background)
-    # end
+    addChild(background)
   end
 
   def add_ground
-    texture = SKTexture.textureWithImageNamed("images/ground.png")
-    (self.frame.size.width / texture.size.width).to_i.times do |i|
-      ground = SKSpriteNode.spriteNodeWithTexture(texture)
-      ground.position = CGPointMake(min_x + (texture.size.width * i) + (texture.size.width / 2), min_y + (texture.size.height / 2))
-      addChild(ground)
-    end
-
-    addChild(Ground.alloc.init)
+    @ground = Ground.alloc.init
+    addChild(@ground)
   end
 
   def add_turret
-    addChild(Turret.alloc.init)
+    # don't like setting the position here but seems to be a bug with childNodeWithName("//ground")
+    @turret = Turret.alloc.init
+    position = CGPointMake(UIScreen.mainScreen.bounds.size.width * 0.5, (@turret.size.height * 0.5) + @ground.size.height)
+    @turret.position = position
+    addChild(@turret)
+  end
+
+  def add_score_label
+    addChild(GameData.instance.current_score_label)
   end
 
   def add_beasts
-    delay = SKAction.waitForDuration(1.2, withRange: 0.2)
+    delay = SKAction.waitForDuration(1.0, withRange: 0.6)
     sequence = SKAction.sequence([SKAction.performSelector("add_beast", onTarget: self), delay])
     self.runAction(SKAction.repeatActionForever(sequence))
   end
@@ -59,20 +53,47 @@ class Level01Scene < SKScene
     addChild(Beast.alloc.init)
   end
 
+  def touchesMoved(touches, withEvent: event)
+    touch = touches.anyObject
+    old_position = touch.previousLocationInNode(self)
+    node = self.nodeAtPoint(old_position)
+
+    if node.name == "turret"
+      new_position = touch.locationInNode(self)
+      self.move_node(node, new_position)
+    end
+  end
+
+  def move_node(node, position)
+    new_position = bounded_position(node, position)
+    node.setPosition(new_position)
+  end
+
+  def bounded_position(node, position)
+    x = [position.x, 0].max
+    x = [x, self.frame.size.width].min
+
+    y = [position.y, @ground.size.height + node.size.height * 0.5].max
+    y = [y, self.frame.size.height - node.size.height].min
+    CGPointMake(x, y)
+  end
+
   def didBeginContact(contact)
     if contact.bodyA.categoryBitMask < contact.bodyB.categoryBitMask
-      beast = contact.bodyA
+      firstBody = contact.bodyA
+      secondBody = contact.bodyB
     else
-      beast = contact.bodyB
+      firstBody = contact.bodyB
+      secondBody = contact.bodyA
     end
 
-    if beast.categoryBitMask == Beast::BEAST
-      beast.node.runAction(beast.node.die)
-    end
+    # delegate contact handling to appropriate class
+    firstBody.node.send("contacted_#{secondBody.node.class.name.underscore}", secondBody)
   end
 
   def didSimulatePhysics
     self.enumerateChildNodesWithName('beast', usingBlock: lambda { |node, stop| node.removeFromParent if node.should_be_removed? })
+    self.enumerateChildNodesWithName('turret/bullet', usingBlock: lambda { |node, stop| node.removeFromParent if node.should_be_removed? })
   end
 
   def mid_x

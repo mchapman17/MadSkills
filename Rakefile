@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 $:.unshift("/Library/RubyMotion/lib")
 require 'motion/project/template/ios'
+require 'motion-support/inflector'
 
 begin
   require 'bundler'
@@ -11,4 +12,5 @@ end
 Motion::Project::App.setup do |app|
   app.name = 'MadSkills'
   app.frameworks += ["SpriteKit"]
+  app.detect_dependencies = false
 end

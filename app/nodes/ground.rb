@@ -1,16 +1,25 @@
-class Ground < SKNode
+class Ground < SKSpriteNode
+
+  GROUND_CATEGORY = 0x1 << 3
 
   def init
     super
 
-    self.position = CGPointMake(UIScreen.mainScreen.bounds.size.width * 0.5, 32)
-    self.physicsBody = SKPhysicsBody.bodyWithRectangleOfSize(CGSizeMake(UIScreen.mainScreen.bounds.size.width, 64))
-    self.physicsBody.categoryBitMask = Level01Scene::WORLD
-    self.physicsBody.restitution = 0.1
-    self.physicsBody.dynamic = false
-    self.physicsBody.collisionBitMask = 0
-    self.physicsBody.usesPreciseCollisionDetection = true
+    self.initWithImageNamed('images/ground.png')
+    self.position = CGPointMake(UIScreen.mainScreen.bounds.size.width * 0.5, self.size.height * 0.5)
+    self.physicsBody = physics_body
+    self.name = "ground"
     self
+  end
+
+  def physics_body
+    body = SKPhysicsBody.bodyWithRectangleOfSize(size)
+    body.restitution = 0.1
+    body.dynamic = false
+    body.usesPreciseCollisionDetection = true
+    body.categoryBitMask = GROUND_CATEGORY
+    body.collisionBitMask = 0
+    body
   end
 
 end

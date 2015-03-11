@@ -32,7 +32,7 @@ class Beast < SKSpriteNode
 
     atlas = SKTextureAtlas.atlasNamed("explosion")
     textures = atlas.textureNames.sort.map { |texture| SKTexture.textureWithImageNamed(texture) }
-    animation = SKAction.animateWithTextures(textures, timePerFrame: 0.05, resize: false, restore: false)
+    animation = SKAction.animateWithTextures(textures, timePerFrame: 0.04, resize: false, restore: false)
 
     self.runAction(SKAction.repeatAction(animation, count: 1), completion: lambda { self.removeFromParent })
   end
@@ -50,11 +50,13 @@ class Beast < SKSpriteNode
   end
 
   def contacted_ground(ground)
-    die
+    self.removeAllActions
+    self.physicsBody = nil
+    self.runAction(SKAction.fadeOutWithDuration(0.5), completion: lambda { self.removeFromParent })
   end
 
   def contacted_turret(turret)
-    die
+    # do nothing
   end
 
   def physics_body

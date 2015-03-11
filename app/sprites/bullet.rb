@@ -1,19 +1,15 @@
 class Bullet < SKSpriteNode
 
   BULLET_CATEGORY = 0x1 << 0
+  SPEED = 500.0
+  OFFSCREEN_MARGIN = 20
 
   def initWithPosition(position)
     self.initWithImageNamed('images/bullet.png')
     self.physicsBody = physics_body
     self.position = position
     self.name = "bullet"
-    self.runAction(shoot)
-
     self
-  end
-
-  def shoot
-    SKAction.moveTo(CGPointMake(self.position.x, UIScreen.mainScreen.bounds.size.height - position.y), duration: 0.9)
   end
 
   def contacted_bullet(bullet)

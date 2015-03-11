@@ -88,12 +88,15 @@ class Level01Scene < SKScene
     end
 
     # delegate contact handling to appropriate class
-    firstBody.node.send("contacted_#{secondBody.node.class.name.underscore}", secondBody)
+    if secondBody.node.class.name.underscore == "nil_class"
+      puts "firstBody: #{firstBody.node}    second: #{secondBody.node}"
+    else
+      firstBody.node.send("contacted_#{secondBody.node.class.name.underscore}", secondBody)
+    end
   end
 
   def didSimulatePhysics
     self.enumerateChildNodesWithName('beast', usingBlock: lambda { |node, stop| node.removeFromParent if node.should_be_removed? })
-    self.enumerateChildNodesWithName('turret/bullet', usingBlock: lambda { |node, stop| node.removeFromParent if node.should_be_removed? })
   end
 
   def mid_x

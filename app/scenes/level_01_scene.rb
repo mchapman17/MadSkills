@@ -1,6 +1,7 @@
 class Level01Scene < SKScene
 
-  WORLD = 0x1 << 1
+  LEVEL = 1
+  WORLD_CATEGORY = 0x1 << 1
 
   def didMoveToView(view)
     super
@@ -51,6 +52,21 @@ class Level01Scene < SKScene
 
   def add_beast
     addChild(Beast.alloc.init)
+  end
+
+  def level_complete?
+    GameData.instance.current_score == 5
+  end
+
+  def end_level
+    # BubbleWrap::Motion.accelerometer.stop
+    level_complete_scene = LevelCompleteScene.alloc.initWithSize(self.size)
+    self.view.presentScene(level_complete_scene, transition: SKTransition.doorsOpenHorizontalWithDuration(0.8))
+  end
+
+  def update(current_time)
+    puts "time: #{current_time}  complete: #{level_complete?}"
+    end_level if level_complete?
   end
 
   def touchesMoved(touches, withEvent: event)

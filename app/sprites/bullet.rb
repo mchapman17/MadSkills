@@ -29,7 +29,7 @@ class Bullet < SKSpriteNode
     body.affectedByGravity = false
     body.friction = 0.0
     body.categoryBitMask = BULLET_CATEGORY
-    body.contactTestBitMask = Level01Scene::WORLD
+    body.contactTestBitMask = Level01Scene::WORLD_CATEGORY
     body
   end
 

@@ -1,7 +1,7 @@
 class Turret < SKSpriteNode
 
   TURRET_CATEGORY = 0x1 << 2
-  RATE = 0.4
+  RATE = 0.3
 
   def init
     self.initWithImageNamed('images/turret.png')

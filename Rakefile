@@ -2,6 +2,7 @@
 $:.unshift("/Library/RubyMotion/lib")
 require 'motion/project/template/ios'
 require 'motion-support/inflector'
+require 'bubble-wrap'
 
 begin
   require 'bundler'
